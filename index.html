@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script src="js/jquery-2.1.3.min.js"></script>
+    <link rel="stylesheet" href="css/sample.css">
+    <title>Trading Information Card</title>
+</head>
+<body>
+    <header>
+        <h1>ランダムマッチング</h1>
+    </header>
+    <main>
+        <!-- <div id="text-button"><p id="text">クリック</p></div> -->
+        <ul>
+            <li id="matching">マッチング開始</li>
+        </ul>
+        <div id="selected_user_area"></div>
+        <div>
+            <div>
+                名前: <input type="text" id="uname">
+            </div>
+            <div>
+                <textarea name="" id="text" cols="30" rows="10"></textarea>
+                <button id="send">送信</button>
+            </div>
+            <div id="output"></div>
+        </div>
+        <style>
+            #output{
+                width: 230px;
+                height: 200px;
+                overflow: scroll;
+                background: #C0C0C0;
+            }
+        </style>
+    </main>]
+
+
+
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <!-- JQuery -->
+    <script>
+        // ビデオ通話付き斉藤さんアプリ
+        // １マッチング機能
+        let userA ={
+            name:'taro',
+            sex:'M'
+        }
+        let userB = {
+            name:'hanako',
+            sex:'F'
+        }
+        let userC = {
+            name:'jiro',
+            sex:'M'
+        }
+        let userD = {
+            name:'sachiko',
+            sex:'F'
+        }
+        let all_users = [userA, userB, userC, userD];
+        // ユーザの登録機能
+        // ランダムにマッチング
+            // 「マッチングボタン」を押す
+            // ユーザの中から、自分の性別とは異なる性別をピックアップし、配列に入れる
+            // 
+        // ２チャット機能
+        // チャットの内容を保存して表示する機能
+        // ３ビデオ通話機能 -->
+        // API
+        // document.getElementById("text-button").onclick = function() {
+        //     document.getElementById("text").innerHTML = "クリックされた！";
+        // };
+        
+
+        function matching(users){
+            // ユーザ一覧を取得
+            // ランダムにユーザを選択
+            // ユーザを表示
+            console.log(users.data);
+            var random = Math.floor(Math.random() * 4)
+            console.log(random)
+            var selected = users.data[random] 
+            var selected_user_area = document.getElementById("selected_user_area");
+            selected_user_area.innerHTML = 'あなたのマッチング相手：' + selected.name;
+        }
+        $('#matching').on('click', all_users, matching);
+
+
+    </script>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+        import { getDatabase, ref, push, set, onChildAdded, remove, onChildRemoved }
+                from "https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-database.js";
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB4M1rSJAPR3ruQpo_9A0CX9twPx78eiRQ",
+            authDomain: "fir-shun.firebaseapp.com",
+            databaseURL: "https://fir-shun-default-rtdb.firebaseio.com",
+            projectId: "fir-shun",
+            storageBucket: "fir-shun.appspot.com",
+            messagingSenderId: "574750016572",
+            appId: "1:574750016572:web:bab8e383e713859504af39"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+    
+        const db = getDatabase(app); // RealtimeDBに接続
+        const dbRef = ref(db, "chat"); // RealtimeDB内の"chat"を使う
+
+        $("#send").on("click", function () {
+            const msg = {
+                uname: $("#uname").val(),
+                text: $("#text").val()
+            }
+            const newPostRef = push(dbRef); // pushできる状態にする
+            set(newPostRef, msg); // DBに値を送信
+        });
+
+        onChildAdded(dbRef, function (data) {
+            const msg = data.val();
+            const key = data.key;
+            console.log(key)
+            const h = `<p id="${key}" class="message">${msg.uname}: ${msg.text}</p>`; 
+            $('#output').append(h); // #output の最後に追加
+        });
+
+        $('#output').on('click','.message', function(){
+            // 1. pタグのid (=firebaseのキー情報)を取得
+            //   →ヒント: クリックされた要素自体を取得するのは $(this) と書く
+            var key = $(this).attr('id');
+            // console.log(key);
+            // 2. どのチャットに対して操作したいのかを指定する（ref）
+            //   →ヒント: const dbRef = ref(db, "chat"); と書くと、 chatという場所に対して指示が出せました
+            //           今回は chatの中のkeyに指示を出したい
+            //           例えば、 -N2GlZ-7UDtuYDrvtSOk に指示を出したいとすると以下のように書く
+            //           const chatRef = ref(db, "chat/-N2GlZ-7UDtuYDrvtSOk");
+            const chatRef = ref(db, `chat/${key}`);
+            // console.log(chatRef);
+            // 3. firebaseの中身を削除する
+            //   →ヒント: remove(chatRef); でいける
+            remove(chatRef);
+        });
+    </script>
+</body>
+</html>
